@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <%if(!username.membership){%>
+    <h1><%= title %></h1>
+    <h2>Hello <%= username.user_name %></h2>
+    <p>Guess the secret code to join the club!</p>
+    <form action="" method="post">
+      <input type="text" name="guess">
+      <button>Join</button>
+    </form>
+    <p>Hint:</p>
+    <p>The more you take, the more you leave behind. What am i?</p>
+    <%} else {%>
+      <a href="/new-message"><button>New Message</button></a>
+      <%}%>
+  </body>
+</html>

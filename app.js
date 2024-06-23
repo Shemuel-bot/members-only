@@ -7,7 +7,20 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+const session = require('express-session');
+const passport = require("passport");
+const LocalStrategy = require('passport-local').Strategy;
+
+const User = require('./models/user');
+
 var app = express();
+
+
+const mongoose = require('mongoose')
+const mongoDb = "mongodb+srv://admin:Endgame33@cluster0.bgxtste.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+mongoose.connect(mongoDb);
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "mongo connection error"));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -18,6 +31,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+
+app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
+app.use(passport.session());
+app.use(express.urlencoded({ extended: false }));
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -37,5 +57,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+
+
 
 module.exports = app;
