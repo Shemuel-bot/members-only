@@ -10,6 +10,7 @@ var usersRouter = require('./routes/users');
 const session = require('express-session');
 const passport = require("passport");
 const LocalStrategy = require('passport-local').Strategy;
+require('dotenv').config()
 
 const User = require('./models/user');
 
@@ -17,7 +18,7 @@ var app = express();
 
 
 const mongoose = require('mongoose')
-const mongoDb = "mongodb+srv://admin:Endgame33@cluster0.bgxtste.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongoDb = process.env.MONGODB_URL;
 mongoose.connect(mongoDb);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));

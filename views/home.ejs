@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><a href="/log-out"><button>Log Out</button></a><%= title %> <a href="/new-message"><button>New Message</button></a></h1>
+    <% for(let i =0; i < messages.length; i++){%>
+        <div class="message-div">
+            <h3><%= messages[i].title %></h3>
+            <p>
+                <%= messages[i].text %>
+            </p>
+            <p><%= messages[i].timestamp  %></p>
+            <p>Author: <%= messages[i].user %></p>
+        </div>
+    <%}%>
+  </body>
+</html>

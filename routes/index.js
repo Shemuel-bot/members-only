@@ -100,6 +100,57 @@ router.post('/update-membership', asyncHandler( async function(req, res, next){
 }))
 
 
+router.get('/new-message', function(req, res, next){
+  res.render('new_message_form', {title: 'New Message'})
+});
+
+router.post('/new-message',[
+  body('title', 'TItle must not be empty')
+    .trim()
+    .isLength({ min: 1})
+    .escape(),
+  body('text', 'Text must not be empty')
+    .trim()
+    .isLength()
+    .escape(),
+  asyncHandler(async function(req, res, next){
+    const errors = validationResult(req);
+    const user = await User.findById(req.user);
+    const message = new Message({
+      title: req.body.title,
+      timestamp: new Date().toISOString().split('T')[0],
+      text: req.body.text,
+      user: user.user_name,
+    });
+
+    if(!errors.isEmpty()){
+      res.render('new_message_form', {title: 'New Message'});
+    }else{
+      await message.save();
+      res.redirect('/home')
+    }
+  })
+]);
+
+router.get('/home', asyncHandler(async function(req, res, next) {
+  const messages = await Message.find();
+
+  res.render('home', {
+    title: 'Home',
+    messages: messages,
+  });
+}))
+
+router.get("/log-out", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
+
+
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
