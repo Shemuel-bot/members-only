@@ -82,6 +82,22 @@ router.get('/update-membership', function(req, res, next){
       });
 });
 
+router.post('/update-membership', asyncHandler( async function(req, res, next){
+  if(req.body.guess === 'footsteps'){
+    await User.findOneAndUpdate({_id: req.user._id}, {$set: {membership: true}})
+    res.render('update_membership', 
+      {
+      title: 'Update Membership',
+      username: req.user, 
+      });
+  }else{
+    res.render('update_membership', 
+      {
+      title: 'Update Membership',
+      username: req.user, 
+      });
+  }
+}))
 
 
 passport.use(
