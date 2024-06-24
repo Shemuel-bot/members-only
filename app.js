@@ -12,9 +12,22 @@ const passport = require("passport");
 const LocalStrategy = require('passport-local').Strategy;
 require('dotenv').config()
 
+const compression = require("compression");
+const helmet = require("helmet");
+
 const User = require('./models/user');
 
 var app = express();
+
+
+const RateLimit = require('express-rate-limiter');
+const limiter = RateLimit({
+  windowMs: 1 * 10 * 1000, // 10 seconds
+  max: 10,
+});
+// Apply rate limiter to all requests
+app.use(limiter);
+
 
 
 const mongoose = require('mongoose')
@@ -38,6 +51,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
+
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      "script-src": ["'self'", "code.jquery.com", "cdn.jsdelivr.net"],
+    },
+  })
+);
+
+app.use(compression());
 
 
 app.use('/', indexRouter);
