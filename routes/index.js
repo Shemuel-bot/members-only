@@ -9,6 +9,7 @@ const session = require('express-session');
 const {body, validationResult} = require('express-validator');
 const asyncHandler = require('express-async-handler');
 const bycrypt = require('bcryptjs');
+const { Admin } = require('mongodb');
 
 
 router.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
@@ -58,6 +59,7 @@ router.post('/sign-up', [
             user_name: req.body.user_name,
             password: req.body.password,
             membership: false,
+            admin: req.body.admin,
           })
 
           await bycrypt.hash(req.body.password, 10)
@@ -81,6 +83,7 @@ router.get('/update-membership', function(req, res, next){
       username: req.user, 
       });
 });
+
 
 router.post('/update-membership', asyncHandler( async function(req, res, next){
   if(req.body.guess === 'footsteps'){
@@ -134,10 +137,11 @@ router.post('/new-message',[
 
 router.get('/home', asyncHandler(async function(req, res, next) {
   const messages = await Message.find();
-
+  const user = await User.findById(req.user);
   res.render('home', {
     title: 'Home',
     messages: messages,
+    admin: user.admin,
   });
 }))
 
@@ -149,7 +153,10 @@ router.get("/log-out", (req, res, next) => {
     res.redirect("/");
   });
 });
-
+router.post('/delete', asyncHandler(async function(req, res, next){
+    await Message.findByIdAndDelete(req.body.id)
+    res.redirect('/home')
+}))
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {

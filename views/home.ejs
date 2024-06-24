@@ -14,6 +14,12 @@
             </p>
             <p><%= messages[i].timestamp  %></p>
             <p>Author: <%= messages[i].user %></p>
+            <%if(admin === 'on'){%>
+              <form action="/delete" method="post">
+              <button type="submit">Delete</button>
+              <input type="text" name="id" hidden value="<%= messages[i]._id %>">
+            </form>
+            <%}%>
         </div>
     <%}%>
   </body>
