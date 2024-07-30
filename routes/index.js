@@ -10,6 +10,7 @@ const {body, validationResult} = require('express-validator');
 const asyncHandler = require('express-async-handler');
 const bycrypt = require('bcryptjs');
 const { Admin } = require('mongodb');
+const db = require('../db/queries');
 
 
 router.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
@@ -32,49 +33,17 @@ router.get('/sign-up', function(req, res, next){
   res.render('sign_up', {title: 'Sign Up'})
 })
 
-router.post('/sign-up', [
-      body('first_name', 'First Name must not be empty')
-        .trim()
-        .isLength({min: 1})
-        .escape(),
-      body('last_name', 'Last Name must not be empty')
-        .trim()
-        .isLength({min: 1})
-        .escape(),
-      body('user_name', 'User Name must not be empty')
-        .trim()
-        .isLength({min: 1})
-        .escape(),
-      body('password', 'Password must not be empty')
-        .trim()
-        .isLength({min: 1})
-        .escape(),
-      
+router.post('/sign-up',   
       asyncHandler(async(req, res, next)=>{
-          const errors = validationResult(req);
-
-          const user = new User({
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            user_name: req.body.user_name,
-            password: req.body.password,
-            membership: false,
-            admin: req.body.admin,
-          })
-
-          await bycrypt.hash(req.body.password, 10)
-                  .then(hash => {user.password = hash })
+        const password = await bycrypt.hash(req.body.password, 10)
+                  .then(hash => hash)
                   .catch(err => {console.log(err.message)});
-          
-          if(!errors.isEmpty()){
-            res.render('sign_up', {title: 'Sign Up'})
-          }else{
-            await user.save()
-            res.redirect('/')
-          }
-
+        await db.insertUser(req.body.username, password);
+        
+        res.redirect('/log-in');
       })
-])
+
+)
 
 router.get('/update-membership', function(req, res, next){
     res.render('update_membership', 
@@ -161,14 +130,16 @@ router.post('/delete', asyncHandler(async function(req, res, next){
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
-      const user = await User.findOne({ user_name: username });
+      const { rows } = await db.findUser(username);
+      const user = rows[0];
+      console.log(user);
       if (!user) {
         return done(null, false, { message: "Incorrect username" });
       };
       const match = await bycrypt.compare(password, user.password);
 if (!match) {
-// passwords do not match!
-return done(null, false, { message: "Incorrect password" })
+  // passwords do not match!
+  return done(null, false, { message: "Incorrect password" })
 }
 
       return done(null, user);
@@ -177,13 +148,16 @@ return done(null, false, { message: "Incorrect password" })
     };
   })
 );
+
 passport.serializeUser((user, done) => {
-  done(null, user._id);
+  done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);
+    const { rows } = await db.findById(id);
+    const user = rows[0];
+
     done(null, user);
   } catch(err) {
     done(err);
